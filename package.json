@@ -1,0 +1,21 @@
+{
+  "name": "preentrega1",
+  "version": "1.0.0",
+  "description": "",
+  "main": "/dist/index.js",
+  "type": "module",
+  "scripts": {
+    "serve": "concurrently \"tsc --watch\" \"nodemon -q build/index.js\"",
+    "dev": "nodemon --exec \"ts-node src/index\"",
+    "build": "rimraf build && tsc",
+    "start": "node ."
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "body-parser": "^1.20.0",
+    "express": "^4.17.3",
+    "file-saver": "^2.0.5",
+    "typescript": "^4.6.3"
+  }
+}
