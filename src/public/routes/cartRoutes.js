@@ -4,7 +4,7 @@ export const cartRouter = Router()
 import Contenedor from "../classes/productsClass.js"
 const cartFile = new Contenedor("cart.txt")
 import bodyParser from 'body-parser'; 
-const productFile = new Contenedor("products.txt")
+import fs from "fs";
 
 let jsonParser = bodyParser.json();
 
@@ -33,25 +33,41 @@ cartRouter.get("/:id/productos", jsonParser, async (req, res)=> {
 })
 
 cartRouter.post("/:id/productos", jsonParser, async (req, res)=> { //Para incorporar productos al carrito por su id de producto
-    console.log("Productfile " + productFile)
-    const product = await productFile.getById(req.params.id) //obtengo el producto a agregar
-    if (product !== null) {
+    try {
+    let products = await fs.promises.readFile("./public/data/products.txt", "utf-8")
+    console.log("PRODUCTS " + products)
+    products = await JSON.parse(products)
+    console.log("PRODUCTS AFTER PARSING " + products)
+    let product = await products.indexOf(product => parseInt(product.id) == parseInt(req.body.id))
+    console.log("PRODUCT " + product)
+    //products = await JSON.parse(products)
+    //const product = products.filter(product => product.id == req.body.id)
+    if (product !== -1) {
         //let newCart = await JSON.parse(cart).producto //Esto es undefined
-        console.log(" product " + product) 
-        
+        console.log(" product " + products[product]) 
+        await fs.promises.writeFile("./public/data/cart.txt", JSON.stringify(products))
         //newCart.id =  newCart.length + 1
         //newCart[0].push(req.body)
-        res.json(product)
+        res.json(products)
     }else {
         res.json("A cart with that id doesn't exist")
     }
+    }catch(err) {
+        res.json({error: err.message})
+    }
+   
 })
 
-cartRouter.delete("/:id/productos/:id_prod", jsonParser, async (req, res)=> {
-    let cart = await cartFile.getById(req.params.id)
-    cart = await JSON.parse(cart)
-    const newCart = cart.producto[0].filter(i=> parseInt(i.id) !== parseInt(req.params.id_prod))
-    res.json(newCart)
+cartRouter.delete("/:id/productos/:id_prod", jsonParser, async (req, res)=> { //eliminar un producto del carrito por su id de producto y de carrito
+    try {
+        let carts = await fs.promises.readFile("./public/data/cart.txt", "utf-8")
+        carts = await JSON.parse(carts) 
+        carts[req.params.id] = carts[req.params.id].filter(product => product.id != req.params.id_prod)
+        await fs.promises.writeFile("./public/data/cart.txt", JSON.stringify(carts))
+    }catch (err) {
+        res.json({error: err.message})
+    }
+    res.json(carts)
 })
 
 
